@@ -1,0 +1,5 @@
+{
+"psi4_aligned_save_file":"/Volumes/SSD-PSM960U3-UW/b3lyp_6-31g(d)_optimization",
+"one_point_level": "M06-2X/6-311g(d,p)",
+"one_point_out_file":"/Volumes/SSD-PSM960U3-UW/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)_single_point_calculation"
+}

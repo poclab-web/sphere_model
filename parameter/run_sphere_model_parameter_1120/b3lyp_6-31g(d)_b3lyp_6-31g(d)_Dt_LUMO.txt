@@ -1,0 +1,9 @@
+{
+"one_point_out_file":"/Volumes/SSD-PSM960U3-UW/b3lyp_6-31g(d)_b3lyp_6-31g(d)_single_point_calculation",
+"data_file_name":"../arranged_dataset_1020/{}.xls",
+"feature":["Dt", "LUMO"],
+"sphere_parameter_path": "../sphere_parameter/light.csv",
+"save_dir": "../results/b3lyp_6-31g(d)_b3lyp_6-31g(d)_Dt_LUMO_1120",
+"fig_dir":"../figs/b3lyp_6-31g(d)_b3lyp_6-31g(d)_Dt_LUMO_1120",
+"single point calculation":"b3lyp/6-31g(d)"
+}
