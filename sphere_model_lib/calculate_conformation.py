@@ -12,7 +12,7 @@ import glob
 import shutil
 
 psi4.set_num_threads(nthread=4)
-psi4.set_memory("6GB")
+psi4.set_memory("10GB")
 psi4.set_options({'geom_maxiter': 1000})
 
 
@@ -169,6 +169,9 @@ def psi4frequency(input_dir_name, output_dir_name, level="hf/sto-3g"):
                                      molecule=molecule,
                                      return_wfn=True)
         frequencies = np.array(wfn.frequencies())
+        with open("{}/frequencies{}.txt".format(output_dir_name, i), 'w') as f:
+            for freq in frequencies:
+                print(freq, file=f)
         if np.sum(frequencies < 0) == 0:
             shutil.copy("{}/optimized{}.xyz".format(input_dir_name, i), "{}/optimized{}.xyz".format(output_dir_name, i))
         else:
@@ -220,7 +223,7 @@ if __name__ == '__main__':
     print(df)
     #
     for param_file_name in glob.glob(
-            "../parameter/optimization_parameter_1221/*.txt"):  # ["./parameter/optimization_parameter.txt"]:
+            "../parameter/optimization_parameter/*.txt"):  # ["./parameter/optimization_parameter.txt"]:
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
         print(param)
@@ -230,6 +233,7 @@ if __name__ == '__main__':
                 mol = get_mol(smiles)
                 MMFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey")
                 psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")
+                psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")
                 if not os.path.isdir(MMFF_out_dirs_name):
                     CalcConfsEnergies(mol)
                     highenergycut(mol, param["cut_MMFF_energy"])
@@ -240,8 +244,7 @@ if __name__ == '__main__':
                 if not os.path.isdir(psi4_out_dirs_name):
                     psi4optimization(MMFF_out_dirs_name, psi4_out_dirs_name + "_calculating", param["optimize_level"])
                     read_xyz(mol, psi4_out_dirs_name + "_calculating")
-                    if  param["cut_psi4_energy"]:
-
+                    if param["cut_psi4_energy"]:
                         highenergycut(mol, param["cut_psi4_energy"])
                     if param["cut_psi4_rmsd"]:
                         rmsdcut(mol, param["cut_psi4_rmsd"])
@@ -252,8 +255,8 @@ if __name__ == '__main__':
                     shutil.rmtree(psi4_out_dirs_name + "_calculating")
                     # if False:#molwt<200:
                     # os.rename(psi4_out_dirs_name + "_calculating", psi4_out_dirs_name)
-                if False and not os.path.isdir(psi4_out_dirs_name + "freq"):
-                    psi4frequency(psi4_out_dirs_name, psi4_out_dirs_name + "_freq_calculating", param["optimize_level"])
-                    os.rename(psi4_out_dirs_name + "_freq_calculating", psi4_out_dirs_name + "freq")
+                if True and not os.path.isdir(psi4_out_dirs_name_freq):
+                    psi4frequency(psi4_out_dirs_name, psi4_out_dirs_name_freq + "_calculating", param["optimize_level"])
+                    os.rename(psi4_out_dirs_name_freq + "_calculating", psi4_out_dirs_name_freq)
             except:
                 None
