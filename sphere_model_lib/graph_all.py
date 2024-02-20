@@ -350,7 +350,7 @@ if True:
         ax.set_title(param["single point calculation"] + "//b3lyp/6-31g(d)", fontsize=10)
         print(
             "{} r2= {:.2f}, q2 = {:.2f}, r2_test = {:.2f}, R2 = {:.2f}, k = {:.2f}, r2'= {:.2f}, r2_test' = {:.2f}, "
-            "RMSE_test = {:.2f}, RMSE_regression = {:.2f}, RMSE_LOOCV = {:.2f}, {} test_train"
+            "RMSE_test = {:.2f}, RMSE_regression = {:.2f}, RMSE_LOOCV = {:.2f}, test_train"
             .format(len(df_test),
                     r2_score(df_train["ΔΔG.expt."], df_train["ΔΔG.regression"]),
                     r2_score(df_train["ΔΔG.expt."], df_train["ΔΔG.loo"]),
@@ -363,5 +363,5 @@ if True:
                     r2_score(df_test["ΔΔG.predict"], df_test["ΔΔG.expt."]),
                     np.sqrt(mean_squared_error(df_test["ΔΔG.predict"], df_test["ΔΔG.expt."])),
                     np.sqrt(mean_squared_error(df_train["ΔΔG.regression"], df_train["ΔΔG.expt."])),
-                    np.sqrt(mean_squared_error(df_train["ΔΔG.loo"], df_train["ΔΔG.expt."])), name))
+                    np.sqrt(mean_squared_error(df_train["ΔΔG.loo"], df_train["ΔΔG.expt."]))))
     plt.savefig("../figs/all/plot_all.png", dpi=500)

@@ -33,7 +33,7 @@ def pkl_to_featurevalue(dirs_name, dfp, mol, param):
                 features = {}
                 dr = (0.52917720859 * 0.2) ** 3
                 if "Dt" in param:
-                    isoval = 10
+                    isoval = 100
                     Dts = [(np.sum(
                         np.where(data__[0]["Dt"].to_numpy() < isoval, data__[0]["Dt"].to_numpy(), isoval))) * dr,
                            (np.sum(
@@ -241,75 +241,77 @@ def prediction(model, df_test, p, param, output_dir_name="../results/test", outp
 
 
 if __name__ == '__main__':
-    for param_file_name in glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"):
-        with open(param_file_name, "r") as f:
-            param = json.loads(f.read())
-        print(param)
-        datafilename="../arranged_dataset_1020/*.xls"
-        l=glob.glob(datafilename)
-        print(l)
-        all_names=[]
-        dfs=[]
-        for name in l:
-            df=pd.read_excel(name).dropna(subset=['smiles'])#[:3]
-            print(name,len(df))
-            df["mol"] = df["smiles"].apply(calculate_conformation.get_mol)
-            df["train"]="train" in os.path.basename(name)[0]
-            all_names.append(os.path.splitext(os.path.basename(name))[0])
-            df = df[
-                [os.path.isdir(param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")) for mol in df["mol"]]]
-            dfs.append(df)
-        df = pd.concat(dfs).drop_duplicates(subset=["smiles"])
-        print(all_names)
-        dfs = dict(zip(all_names, dfs))
-        print(len(df))
-        df["mol"].apply(
-            lambda mol: calculate_conformation.read_xyz(mol,
-                                                        param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")))
+    while True:
+        #time.sleep(3600*6)
+        for param_file_name in glob.glob("../parameter/run_sphere_model_parameter_1120/wB*.txt"):
+            with open(param_file_name, "r") as f:
+                param = json.loads(f.read())
+            print(param)
+            datafilename="../arranged_dataset_1020/*.xls"
+            l=glob.glob(datafilename)
+            print(l)
+            all_names=[]
+            dfs=[]
+            for name in l:
+                df=pd.read_excel(name).dropna(subset=['smiles'])#[:3]
+                print(name,len(df))
+                df["mol"] = df["smiles"].apply(calculate_conformation.get_mol)
+                df["train"]="train" in os.path.basename(name)[0]
+                all_names.append(os.path.splitext(os.path.basename(name))[0])
+                df = df[
+                    [os.path.isdir(param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")) for mol in df["mol"]]]
+                dfs.append(df)
+            df = pd.concat(dfs).drop_duplicates(subset=["smiles"])
+            print(all_names)
+            dfs = dict(zip(all_names, dfs))
+            print(len(df))
+            df["mol"].apply(
+                lambda mol: calculate_conformation.read_xyz(mol,
+                                                            param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")))
 
-        dfp = pd.read_csv(param["sphere_parameter_path"])
-        print(len(dfp))
+            dfp = pd.read_csv(param["sphere_parameter_path"])
+            print(len(dfp))
 
-        start = time.time()
-        for mol in df["mol"]:
-            dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-            pkl_to_featurevalue(dirs_name, dfp, mol, param["feature"])
+            start = time.time()
+            for mol in df["mol"]:
+                dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
+                pkl_to_featurevalue(dirs_name, dfp, mol, param["feature"])
 
-        for name in ["BH3", "NaBH4", "LiAlH4", "LiAl(OMe)3H", "MeLi", "MeMgI", "PhLi", "PhMgI"]:
-            df_ = dfs["train_" + name]
-            df_["mol"] = df_["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-            for mol, RT in zip(df_["mol"], df_["RT"]):
-                energy_to_Boltzmann_distribution(mol, RT)
-                feature_value(mol, dfp, param["feature"])
-
-            dfp_ = grid_search(df_, dfp, param["feature"], "{}/{}".format(param["save_dir"], name), "/grid_search.csv")
-            model=leave_one_out(df_, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
-                          "{}/{}".format(param["save_dir"], name),
-                          "/leave_one_out.xls")
-            if name in ["LiAlH4", "NaBH4", "MeLi","PhLi"]:
-                df_test = dfs["test_" + name]
-                df_test["mol"] = df_test["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-                for mol, RT in zip(df_test["mol"], df_test["RT"]):
+            for name in ["BH3", "NaBH4", "LiAlH4", "LiAl(OMe)3H", "MeLi", "MeMgI", "PhLi", "PhMgI"]:
+                df_ = dfs["train_" + name]
+                df_["mol"] = df_["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
+                for mol, RT in zip(df_["mol"], df_["RT"]):
                     energy_to_Boltzmann_distribution(mol, RT)
                     feature_value(mol, dfp, param["feature"])
-                prediction(model, df_test, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
-                           "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
-            print(dfp_)
-            if False and name=="MeMgI":
-                for name,n in zip(["EtMgI","iPrMgI","tBuMgI"],[1.1,1.2,1.3]):
+
+                dfp_ = grid_search(df_, dfp, param["feature"], "{}/{}".format(param["save_dir"], name), "/grid_search.csv")
+                model=leave_one_out(df_, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
+                              "{}/{}".format(param["save_dir"], name),
+                              "/leave_one_out.xls")
+                if name in ["LiAlH4", "NaBH4", "MeLi","PhLi"]:
                     df_test = dfs["test_" + name]
                     df_test["mol"] = df_test["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-
-                    p=dfp_.iloc[dfp_["RMSE"].idxmin():dfp_["RMSE"].idxmin()+1]
-                    p["r"]=p["r"]*n
-                    #p["d"]=p["d"]*n
-                    p=p.round(2)
-                    print(p)
                     for mol, RT in zip(df_test["mol"], df_test["RT"]):
-                        dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-                        pkl_to_featurevalue(dirs_name, p, mol, param["feature"])
                         energy_to_Boltzmann_distribution(mol, RT)
-                        feature_value(mol, p, param["feature"])
-
-                    prediction(model, df_test, p[["r", "d", "t"]].values[0], param["feature"],
+                        feature_value(mol, dfp, param["feature"])
+                    prediction(model, df_test, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
                                "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
+                print(dfp_)
+                if False and name=="MeMgI":
+                    for name,n in zip(["EtMgI","iPrMgI","tBuMgI"],[1.1,1.2,1.3]):
+                        df_test = dfs["test_" + name]
+                        df_test["mol"] = df_test["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
+
+                        p=dfp_.iloc[dfp_["RMSE"].idxmin():dfp_["RMSE"].idxmin()+1]
+                        p["r"]=p["r"]*n
+                        #p["d"]=p["d"]*n
+                        p=p.round(2)
+                        print(p)
+                        for mol, RT in zip(df_test["mol"], df_test["RT"]):
+                            dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
+                            pkl_to_featurevalue(dirs_name, p, mol, param["feature"])
+                            energy_to_Boltzmann_distribution(mol, RT)
+                            feature_value(mol, p, param["feature"])
+
+                        prediction(model, df_test, p[["r", "d", "t"]].values[0], param["feature"],
+                                   "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
