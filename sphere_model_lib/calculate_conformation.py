@@ -164,7 +164,7 @@ def psi4frequency(input_dir_name, output_dir_name, level="hf/sto-3g"):
             ans = f.read()
             molecule = psi4.geometry(ans)
 
-        psi4.set_output_file(input_dir_name + "/frequency{}.log".format(i))
+        psi4.set_output_file(output_dir_name + "/frequency{}.log".format(i))
         energy, wfn = psi4.frequency(level,
                                      molecule=molecule,
                                      return_wfn=True)
