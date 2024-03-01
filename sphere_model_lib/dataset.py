@@ -28,7 +28,7 @@ def make_dataset(sheet_name, column_name, out_file_name):  # in ["dr.expt.BH3"]:
     df = pd.read_excel(from_file_path, sheet_name=sheet_name) \
         .rename(columns={column_name: "dr.expt."}).dropna(subset=["smiles"])
     if True and sheet_name == "training":
-        df=df[df["entry"]!=141]#[df["entry"]!=86]
+        df = df[df["entry"] != 141]  # [df["entry"]!=86]
     df["mol"] = df["smiles"].apply(Chem.MolFromSmiles)
     df = df[df["dr.expt."] != False].dropna(subset=['dr.expt.', "mol", "smiles"])  # .dropna(subset=['smiles'])#順番重要！
 
@@ -64,6 +64,6 @@ make_dataset("test", "dr.expt.LiAlH4", "test_LiAlH4.xls")
 make_dataset("test", "dr.expt.NaBH4", "test_NaBH4.xls")
 make_dataset("test", "dr.expt.MeLi", "test_MeLi.xls")
 make_dataset("test", "dr.expt.PhLi", "test_PhLi.xls")
-#make_dataset("test2", "dr.expt.EtMgI", "test_EtMgI.xls")
-#make_dataset("test2", "dr.expt.iPrMgI", "test_iPrMgI.xls")
-#make_dataset("test2", "dr.expt.tBuMgI", "test_tBuMgI.xls")
+# make_dataset("test2", "dr.expt.EtMgI", "test_EtMgI.xls")
+# make_dataset("test2", "dr.expt.iPrMgI", "test_iPrMgI.xls")
+# make_dataset("test2", "dr.expt.tBuMgI", "test_tBuMgI.xls")

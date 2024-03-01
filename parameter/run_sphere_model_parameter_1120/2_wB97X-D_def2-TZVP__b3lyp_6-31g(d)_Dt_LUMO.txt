@@ -1,0 +1,9 @@
+{
+"one_point_out_file":"/Volumes/HD-PGF-A/wB97X-D_def2-TZVP_b3lyp_6-31g(d)_single_point_calculation",
+"data_file_name":"../arranged_dataset_1020/{}.xls",
+"feature":["Dt", "LUMO"],
+"sphere_parameter_path": "../sphere_parameter/light.csv",
+"save_dir": "../results/wB97X-D_def2-TZVP_b3lyp_6-31g(d)",
+"fig_dir":"../figs/wB97X-D_def2-TZVP_b3lyp_6-31g(d)",
+"single point calculation":"ωB97X-D/def2-TZVP"
+}

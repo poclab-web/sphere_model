@@ -192,7 +192,6 @@ def gaussianfrequency(input_dir_name, output_dir_name, level="hf/sto-3g"):
         os.makedirs(output_dir_name, exist_ok=True)
         with open("{}/optimized{}.xyz".format(input_dir_name, i), "r") as f:
             ans = "\n".join(f.read().split("\n")[2:])
-            # molecule = psi4.geometry(ans)
         with open("{}/gaussianinput{}.gjf".format(output_dir_name, i), 'w') as f:
             print("%nprocshared=10", file=f)
             print("%mem=12GB", file=f)
@@ -206,19 +205,7 @@ def gaussianfrequency(input_dir_name, output_dir_name, level="hf/sto-3g"):
             print(charge_and_mult, file=f)
 
             print(ans, file=f)
-        # psi4.set_output_file(output_dir_name + "/frequency{}.log".format(i))
-        # energy, wfn = psi4.frequency(level,
-        #                              molecule=molecule,
-        #                              return_wfn=True)
-        # frequencies = np.array(wfn.frequencies())
-
         i += 1
-
-
-# directory_path = '/Users/macmini_m1_2022/Desktop/TIPS_S1T1_Energy'
-# file_list = os.listdir(directory_path)
-# gjf_files = [filename for filename in file_list if filename.endswith(".gjf")]
-# gjf_files.sort(key=lambda x: int(x.split('_')[0]))
 
 
 def run_gaussian(filenames):
@@ -278,15 +265,6 @@ if __name__ == '__main__':
         dfs.append(df)
     df = pd.concat(dfs).drop_duplicates(subset=["smiles"]).dropna(subset=['mol'])
     print(df)
-    # data_file_path = "../dataset/data.xlsx"
-    # sheet_name = "train"
-    # df1 = pd.read_excel(data_file_path, sheet_name=sheet_name).dropna(subset=['smiles'])
-    # sheet_name = "test"
-    # df2 = pd.read_excel(data_file_path, sheet_name=sheet_name).dropna(subset=['smiles'])
-    # df = pd.concat([df1, df2]).drop_duplicates(subset=["smiles"])
-
-    # df["mol"] = df["smiles"].apply(Chem.MolFromSmiles)
-    # df = df.dropna(subset=['mol'])
     df["molwt"] = df["smiles"].apply(lambda smiles: ExactMolWt(Chem.MolFromSmiles(smiles)))
     df = df.sort_values("molwt")
     print(df)
@@ -304,9 +282,9 @@ if __name__ == '__main__':
                 psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")
                 psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")
                 if not os.path.isdir(MMFF_out_dirs_name):
-                    if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
-                                                   "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
-                                                   "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                    if mol.GetProp("InchyKey") in [  # "MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                        "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                        "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
                         CalcConfsEnergies(mol, "UFF")
                         print("UFF")
                     else:
@@ -328,7 +306,6 @@ if __name__ == '__main__':
                     ConfTransform(mol)
                     conf_to_xyz(mol, psi4_out_dirs_name)
                     shutil.rmtree(psi4_out_dirs_name + "_calculating")
-                    # if False:#molwt<200:
                     # os.rename(psi4_out_dirs_name + "_calculating", psi4_out_dirs_name)
                 ##if True and not os.path.isdir(psi4_out_dirs_name_freq):
                 #     psi4frequency(psi4_out_dirs_name, psi4_out_dirs_name_freq + "_calculating", param["optimize_level"])
