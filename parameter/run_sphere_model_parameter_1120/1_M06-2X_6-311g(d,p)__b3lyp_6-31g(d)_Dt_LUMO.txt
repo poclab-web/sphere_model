@@ -3,7 +3,7 @@
 "data_file_name":"../arranged_dataset_1020/{}.xls",
 "feature":["Dt", "LUMO"],
 "sphere_parameter_path": "../sphere_parameter/light.csv",
-"save_dir": "../results/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)_Dt_LUMO_1120",
-"fig_dir":"../figs/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)_Dt_LUMO_1120",
-"single point calculation":"M06-2X/6-311g(d,p)"
+"save_dir": "../results/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)",
+"fig_dir":"../figs/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)",
+"single point calculation":"M06-2X/6-311G(d,p)"
 }

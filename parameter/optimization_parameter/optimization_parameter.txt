@@ -9,5 +9,5 @@
 "cut_psi4_energy":2,
 "cut_psi4_rmsd":0.5,
 "max_psi4_conformer":3,
-"psi4_opt_save_file":"/Volumes/SSD-PSM960U3-UW/b3lyp_6-31g(d)_optimization"
+"psi4_opt_save_file":"/Volumes/SSD-PSM960U3-UW/b3lyp_6-31g*_optimization"
 }

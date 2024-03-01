@@ -12,14 +12,16 @@ import time
 
 
 def psi4calculation(input_dir_name, output_dir_name, level="hf/sto-3g"):
-    psi4.set_num_threads(nthread=10)
+    psi4.set_num_threads(nthread=6)
     psi4.set_memory("10GB")
     # psi4.set_options({'geom_maxiter': 1000})
 
     psi4.set_options({'cubeprop_filepath': output_dir_name})
     print(input_dir_name)
-    i = 0
-    while os.path.isfile("{}/optimized{}.xyz".format(input_dir_name, i)):
+    #i = 0
+    #while os.path.isfile("{}/optimized{}.xyz".format(input_dir_name, i)):
+    for filepath in sorted(glob.glob("{}/optimized?.xyz".format(input_dir_name))):
+        i=filepath[-5]
         os.makedirs(output_dir_name, exist_ok=True)
         with open("{}/optimized{}.xyz".format(input_dir_name, i), "r") as f:
             rl = f.read().split("\n")
@@ -67,12 +69,17 @@ def psi4calculation(input_dir_name, output_dir_name, level="hf/sto-3g"):
         os.remove(output_dir_name + "/geom.xyz")
         with open(output_dir_name + "/optimized{}.xyz".format(i), "w") as f:
             print(mol_output, file=f)
-        i += 1
+        #i += 1
 
 
 def cube_to_pkl(dirs_name):
-    i = 0
-    while os.path.isfile("{}/optimized{}.xyz".format(dirs_name + "calculating", i)):
+    #i = 0
+    # while os.path.isfile("{}/optimized{}.xyz".format(dirs_name + "calculating", i)):
+    print("!!")
+    print(sorted(glob.glob("{}/optimized?.xyz".format(dirs_name+ "calculating"))))
+    for filepath in sorted(glob.glob("{}/optimized?.xyz".format(dirs_name+ "calculating"))):
+        print(filepath)
+        i=filepath[-5]
         with open("{}/Dt{}.cube".format(dirs_name + "calculating", i), 'r', encoding='UTF-8') as f:
             Dt = f.read().splitlines()
         with open("{}/ESP{}.cube".format(dirs_name + "calculating", i), 'r', encoding='UTF-8') as f:
@@ -102,10 +109,11 @@ def cube_to_pkl(dirs_name):
         arr = np.concatenate([l, Dt, ESP, LUMO,LUMO1, HOMO, DUAL], axis=1)
         df = pd.DataFrame(arr, columns=["x", "y", "z", "Dt", "ESP", "LUMO","LUMO+1", "HOMO", "DUAL"])
         df.to_pickle(dirs_name + "calculating" + "/data{}.pkl".format(i))
-        i += 1
-    if i != 0:
+    try:
+        print(i)
         os.rename(dirs_name + "calculating", dirs_name)
-
+    except:
+        None
 
 if __name__ == '__main__':
     datafilename = "../arranged_dataset_1020/*.xls"
@@ -120,20 +128,21 @@ if __name__ == '__main__':
     df = pd.concat(dfs).drop_duplicates(subset=["smiles"]).dropna(subset=['mol'])
     df["molwt"] = df["smiles"].apply(lambda smiles: ExactMolWt(Chem.MolFromSmiles(smiles)))
     df = df.sort_values("molwt")  # [:2]
+    df["InchyKey"]=[mol.GetProp("InchyKey") for mol in df["mol"]]
     print(len(df))
-
+    print(len(df.duplicated(subset='InchyKey')))
     while True:
-        for param_file_name in glob.glob("../parameter/single_point_calculation_parameter/*.txt")[::-1]:
+        for param_file_name in glob.glob("../parameter/single_point_calculation_parameter/*.txt"):
             with open(param_file_name, "r") as f:
                 param = json.loads(f.read())
             ab=[]
             bc=[]
             others=[]
-            for smiles in df["smiles"]:
+            for i,smiles in enumerate(df["smiles"]):
                 mol = calculate_conformation.get_mol(smiles)
                 input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey")
                 output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-                print(output_dirs_name)
+                print(i,output_dirs_name,smiles)
                 if not os.path.isdir(output_dirs_name):
                     try:
                         psi4calculation(input_dirs_name, output_dirs_name + "calculating", param["one_point_level"])

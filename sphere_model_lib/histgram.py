@@ -35,7 +35,7 @@ if __name__ == '__main__':
         df = pd.concat(dfs).drop_duplicates(subset=["smiles"])#.dropna(subset=['mol'])
     print(len(df))
 
-    for param_file_name in glob.glob("../parameter/single_point_calculation_parameter/*.txt"):
+    for param_file_name in glob.glob("../parameter/single_point_calculation_parameter/*cc*.txt"):
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
 
@@ -63,7 +63,7 @@ if __name__ == '__main__':
             if name=="Dt":
                 plt.xlabel('electron density [e/$\mathrm{Bohr^3}$]')
             else:
-                plt.xlabel('LUMO [e/$\mathrm{Bohr^{3/2}}$]')
+                plt.xlabel('LUMO [$\mathrm{e^{1/2}}$/$\mathrm{Bohr^{3/2}}$]')
 
             plt.ylabel('Frequency')
             plt.tight_layout()

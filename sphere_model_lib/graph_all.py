@@ -16,7 +16,7 @@ os.makedirs("../figs/all", exist_ok=True)
 if True:
     fig = plt.figure(figsize=(11, 3))
     j = 0
-    for param_file_name, color in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
+    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
                                       ["red", "blue", "green"]):
         j += 1
         ax = fig.add_subplot(1, 3, j)
@@ -34,19 +34,20 @@ if True:
             coefs.append(coef)
             R = dfp[["r"]].values[dfp["RMSE"].idxmin()]
             Rs.append(R)
-            print(coef,R,name)
+            print(coef, R, name)
         cmap = plt.cm.get_cmap("cool_r")
-        sc = ax.scatter(Rs,coefs, c=coefs, cmap=cmap,s=np.array(Rs)*40)
+        sc = ax.scatter(Rs, coefs, c=coefs, cmap=cmap, s=np.array(Rs) * 40)
         from mpl_toolkits.axes_grid1 import make_axes_locatable
+
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.0)
 
-        plt.colorbar(sc, cax=cax,ticks=[0,20, 40,60])
-        #ax.plot(coefs, Rs, "o", color=color)  # ,color="black")
+        plt.colorbar(sc, cax=cax, ticks=[0, 20, 40, 60])
+        # ax.plot(coefs, Rs, "o", color=color)  # ,color="black")
     # ax.set_xlim([0, 8])
     # ax.set_ylim([0, -1])
-    ax.set_yticks([0, 20, 40,60])
-    ax.set_xticks([1, 2, 3,4])
+    ax.set_yticks([0, 20, 40, 60])
+    ax.set_xticks([1, 2, 3, 4])
     ax.set_ylabel("orbital contribution [%]")
     ax.set_xlabel("optimam radius [Å]")
     fig.tight_layout()  # レイアウトの設定
@@ -59,13 +60,13 @@ if True:
                                          "{PhLi}",
                                          "{PhMgI}"])):
         ax = fig.add_subplot(2, 4, i + 1)
-        for param_file_name, color, level in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
-                                                 [["red", "red"], ["blue", "blue"], ["green", "green"]],
-                                                 ["b3lyp/6-31g(d)//b3lyp/6-31g(d)", "M06-2X/6-31g(d)//b3lyp/6-31g(d)",
-                                                  "M06-2X/6-311g(d,p)//b3lyp/6-31g(d)"]):
+        for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
+                                          [["red", "red"], ["blue", "blue"], ["green", "green"]]):
+
             with open(param_file_name, "r") as f:
                 param = json.loads(f.read())
             print(param)
+            level = param["single point calculation"] + "//B3LYP/6-31G(d)"
             df = pd.read_excel("{}/{}/leave_one_out.xls".format(param["save_dir"], nu))
 
             ax.plot([-2.5, 2.5], [-2.5, 2.5], color="Gray", alpha=0.5)
@@ -99,7 +100,7 @@ if True:
                           np.sqrt(mean_squared_error(df["ΔΔG.loo"], df["ΔΔG.expt."]))
                           , label))
         fig.tight_layout()
-    plt.savefig("../figs/all/plot.png", dpi=500)
+    plt.savefig("../figs/all/prediction_training.png", dpi=500)
 
 fig = plt.figure(figsize=(3, 3))
 ax = fig.add_subplot(1, 1, 1)
@@ -108,13 +109,12 @@ fig = plt.figure(figsize=(14, 3))
 for i, (name, label) in enumerate(
         zip(["LiAlH4", "NaBH4", "MeLi", "PhLi"], ["{LiAlH_4}", "{NaBH_4}", "{MeLi}", "{PhLi}"])):
     ax = fig.add_subplot(1, 4, i + 1)
-    for param_file_name, color, level in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
-                                             [["red", "red"], ["blue", "blue"], ["green", "green"]],
-                                             ["b3lyp/6-31g(d)//b3lyp/6-31g(d)", "M06-2X/6-31g(d)//b3lyp/6-31g(d)",
-                                              "M06-2X/6-311g(d,p)//b3lyp/6-31g(d)"]):
+    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
+                                      [["red", "red"], ["blue", "blue"], ["green", "green"]]):
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
         print(param)
+        level = param["single point calculation"] + "//B3LYP/6-31G(d)"
         df_test = pd.read_excel("{}/{}/test_prediction.xls".format(param["save_dir"], name))
         if name == "PhLi":
             df_test = df_test  # .drop([5, 6, 7, 8])
@@ -161,8 +161,8 @@ for i, (name, label) in enumerate(
                  , fontsize=10)
 # ax.legend([None,"$\mathrm{b_{LUMO}}$","$\mathrm{b_{electron}}$"], loc='upper left', bbox_to_anchor=(0.5, 1.1),  ncol=2)
 fig.tight_layout()
-plt.savefig("../figs/all/test_prediction.png", dpi=500)
-for param_file_name, color in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
+plt.savefig("../figs/all/prediction_test.png", dpi=500)
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
                                   ["red", "blue", "green"]):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
@@ -178,7 +178,7 @@ for param_file_name, color in zip(glob.glob("../parameter/run_sphere_model_param
 # feature importance
 fig = plt.figure(figsize=(3, 3))
 ax = fig.add_subplot(1, 1, 1)
-for param_file_name, color in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
                                   ["red", "blue", "green"]):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
@@ -198,7 +198,7 @@ ax.set_ylabel("${b_\mathrm{LUMO}}$ [kcal/mol]")
 fig.tight_layout()  # レイアウトの設定
 plt.savefig("../figs/all/coef.png", dpi=500)
 
-for param_file_name, color in zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
                                   ["red", "blue", "green"]):
 
     fig, ax = plt.subplots()
@@ -239,12 +239,14 @@ margin = 0.2  # 0 <margin< 1
 totoal_width = 1 - margin
 x = np.array([1, 2, 3, 4, 5, 6, 7, 8])
 fig, ax = plt.subplots(figsize=(6.4, 4))
-
-for i, (param_file_name, color) in enumerate(zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
-                                                 ["red", "blue", "green"])):
+levels = []
+for i, (param_file_name, color) in enumerate(
+        zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
+            ["red", "blue", "green"])):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
     print(param)
+    levels.append(param["single point calculation"])
     l = []
     for j, (name, label) in enumerate(zip(["BH3", "LiAlH4", "NaBH4", "LiAl(OMe)3H", "MeLi", "MeMgI", "PhLi", "PhMgI"],
                                           labels)):
@@ -259,21 +261,23 @@ for i, (param_file_name, color) in enumerate(zip(glob.glob("../parameter/run_sph
                   alpha=0.2 + 0.2 * np.sqrt(i))  # ,label="orbital"
     bar2 = ax.bar(pos, l[:, 0] / np.sum(np.abs(l), axis=1), width=totoal_width / 3, color="red",
                   alpha=0.2 + 0.2 * np.sqrt(i))  # ,label="steric"
-    ax.bar_label(bar1, labels=["{:.2f}".format(_) for _ in l[:, 1]], rotation=60, label_type='center')  # ,fmt='%.2f'
-    ax.bar_label(bar2, labels=["+{:.2f}".format(_) for _ in l[:, 0]], rotation=60, label_type='center')  # ,fmt='%.2f'
+    ax.bar_label(bar1, labels=["{:.2f}".format(_) for _ in l[:, 1]], rotation=90, label_type='center',
+                 fontsize=12)  # ,fmt='%.2f'
+    ax.bar_label(bar2, labels=["+{:.2f}".format(_) for _ in l[:, 0]], rotation=90, label_type='center',
+                 fontsize=12)  # ,fmt='%.2f'
 ax.set_xticks(x)
 ax.set_xlim(1 - (1 - margin) / 3 - margin, 8 + (1 - margin) / 3 + margin)
 ax.set_ylim(0, 1.1)
-ax.set_yticks([0, 0.5, 1])
+ax.set_yticks([0, 0.5, 1], fontsize=12)
 ax.set_xticklabels(["$\mathrm{}$".format(label) for label in labels], rotation=20)
-ax.set_xlabel("training dataset")
-ax.set_ylabel("ratio")
+ax.set_xlabel("training dataset", fontsize=12)
+ax.set_ylabel("ratio", fontsize=12)
 
-ax.legend(["${b_\mathrm{LUMO}}$ b3lyp/6-31g(d)", "${b_\mathrm{electron}}$ b3lyp/6-31g(d)",
-           "${b_\mathrm{LUMO}}$ M06-2X/6-31g(d)", "${b_\mathrm{electron}}$ M06-2X/6-31g(d)",
-           "${b_\mathrm{LUMO}}$ M06-2X/6-311g(d,p)", "${b_\mathrm{electron}}$ M06-2X/6-311g(d,p)"],
-          loc='upper left', bbox_to_anchor=(-0.0, 1.2), ncol=3, fontsize=8)
-ax.plot([1 - (1 - margin) / 3 - margin, 8 + (1 - margin) / 3 + margin], [0.5, 0.5], color="Gray", alpha=0.5)
+ax.legend(["${b_\mathrm{LUMO}}$    " + levels[0], "${b_\mathrm{electron}}$ " + levels[0],
+           "${b_\mathrm{LUMO}}$    " + levels[1], "${b_\mathrm{electron}}$ " + levels[1],
+           "${b_\mathrm{LUMO}}$    " + levels[2], "${b_\mathrm{electron}}$ " + levels[2]],
+          loc='upper left', bbox_to_anchor=(-0.05, 1.2), ncol=3, fontsize=8)
+#ax.plot([1 - (1 - margin) / 3 - margin, 8 + (1 - margin) / 3 + margin], [0.5, 0.5], color="Gray", alpha=0.5)
 fig.tight_layout()  # レイアウトの設定
 
 plt.savefig("../figs/all/coef_bars.png", dpi=500)
@@ -283,8 +287,9 @@ markersize = 3
 alpha = 0.4
 if True:
     fig = plt.figure(figsize=(9, 3))
-    for j, (param_file_name, color) in enumerate(zip(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt"),
-                                                     ["red", "blue", "green"])):
+    for j, (param_file_name, color) in enumerate(
+            zip(sorted(glob.glob("../parameter/run_sphere_model_parameter_1120/*.txt")),
+                ["red", "blue", "green"])):
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
         print(param)
@@ -347,7 +352,7 @@ if True:
                     len(df_test)), fontsize=8)
         fig.tight_layout()  # レイアウトの設定
         ax.legend(fontsize=5.5, loc='lower right')  # 凡例
-        ax.set_title(param["single point calculation"] + "//b3lyp/6-31g(d)", fontsize=10)
+        ax.set_title(param["single point calculation"] + "//B3LYP/6-31G(d)", fontsize=10)
         print(
             "{} r2= {:.2f}, q2 = {:.2f}, r2_test = {:.2f}, R2 = {:.2f}, k = {:.2f}, r2'= {:.2f}, r2_test' = {:.2f}, "
             "RMSE_test = {:.2f}, RMSE_regression = {:.2f}, RMSE_LOOCV = {:.2f}, test_train"
@@ -364,4 +369,4 @@ if True:
                     np.sqrt(mean_squared_error(df_test["ΔΔG.predict"], df_test["ΔΔG.expt."])),
                     np.sqrt(mean_squared_error(df_train["ΔΔG.regression"], df_train["ΔΔG.expt."])),
                     np.sqrt(mean_squared_error(df_train["ΔΔG.loo"], df_train["ΔΔG.expt."]))))
-    plt.savefig("../figs/all/plot_all.png", dpi=500)
+    plt.savefig("../figs/all/prediction_all.png", dpi=500)

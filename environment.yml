@@ -1,4 +1,4 @@
-name: sphere_model
+name: psi4_env
 channels:
   - conda-forge
   - psi4
@@ -152,8 +152,6 @@ dependencies:
   - nspr=4.35=hea0b92c_0
   - nss=3.89=h78b00b3_0
   - numba=0.58.0=py38h3ea8b11_0
-  - numpy=1.24.3=py38he696674_0
-  - numpy-base=1.24.3=py38h9cd3388_0
   - openpyxl=3.0.10=py38hca72f7f_0
   - openssl=3.1.3=h8a1eda9_0
   - overrides=7.4.0=pyhd8ed1ab_0
@@ -260,4 +258,8 @@ dependencies:
   - zlib=1.2.13=h8a1eda9_5
   - zstd=1.5.5=h829000d_0
   - pip:
+      - cclib==1.8
+      - numpy==1.22.4
+      - periodictable==1.6.1
       - rdkit==2023.3.3
+prefix: /Users/macmini_m1_2022/anaconda3/envs/psi4_env
