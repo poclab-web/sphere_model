@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 from_file_path = "../dataset/data.xlsx"
-to_dir_path = "../arranged_dataset_1020"
+to_dir_path = "../arranged_dataset"
 for name in ["training", "test"]:
     df = pd.read_excel(from_file_path, sheet_name=name).dropna(subset=["smiles"])
     df["mol"] = df["smiles"].apply(Chem.MolFromSmiles)

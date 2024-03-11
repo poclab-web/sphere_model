@@ -254,9 +254,7 @@ def read_xyz(mol, input_dir_name):
 
 
 if __name__ == '__main__':
-    datafilename = "../arranged_dataset_1020/*.xls"
-    l = glob.glob(datafilename)
-    print(l)
+    l = glob.glob("../arranged_dataset/*.xls")
     dfs = []
     for name in l:
         df = pd.read_excel(name).dropna(subset=['smiles'])
@@ -267,35 +265,62 @@ if __name__ == '__main__':
     print(df)
     df["molwt"] = df["smiles"].apply(lambda smiles: ExactMolWt(Chem.MolFromSmiles(smiles)))
     df = df.sort_values("molwt")
-    print(df)
-    #
     for param_file_name in glob.glob(
             "../parameter/optimization_parameter/*.txt"):  # ["./parameter/optimization_parameter.txt"]:
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
         print(param)
-        for smiles, molwt in zip(df["smiles"], df["molwt"]):  # .iloc[::-1]:
-            if True:
-                print(smiles)
-                mol = get_mol(smiles)
-                MMFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey")
-                psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")
-                psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")
-                if not os.path.isdir(MMFF_out_dirs_name):
-                    if mol.GetProp("InchyKey") in [  # "MILHJIWCSVKZDK-NAKRPEOUSA-N",
-                        "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
-                        "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
-                        CalcConfsEnergies(mol, "UFF")
-                        print("UFF")
-                    else:
-                        CalcConfsEnergies(mol, "MMFF")
+        for smiles in df["smiles"]:  # .iloc[::-1]:
+            print(smiles)
+            mol = get_mol(smiles)
+            MMFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey")
+            psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")
+            psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")
+
+            if not os.path.isdir(MMFF_out_dirs_name):
+                CalcConfsEnergies(mol, "MMFF")
+                highenergycut(mol, param["cut_MMFF_energy"])
+                rmsdcut(mol, param["cut_MMFF_rmsd"])
+                delconformer(mol, param["max_MMFF_conformer"])
+                ConfTransform(mol)
+                conf_to_xyz(mol, MMFF_out_dirs_name)
+
+            if not os.path.isdir(psi4_out_dirs_name):
+                psi4optimization(MMFF_out_dirs_name, psi4_out_dirs_name + "_calculating", param["optimize_level"])
+                read_xyz(mol, psi4_out_dirs_name + "_calculating")
+                if param["cut_psi4_energy"]:
+                    highenergycut(mol, param["cut_psi4_energy"])
+                if param["cut_psi4_rmsd"]:
+                    rmsdcut(mol, param["cut_psi4_rmsd"])
+                if param["max_psi4_conformer"]:
+                    delconformer(mol, param["max_psi4_conformer"])
+                ConfTransform(mol)
+                conf_to_xyz(mol, psi4_out_dirs_name)
+                shutil.rmtree(psi4_out_dirs_name + "_calculating")
+
+            if not os.path.isdir(psi4_out_dirs_name_freq):
+                gaussianfrequency(psi4_out_dirs_name, psi4_out_dirs_name_freq + "_calculating",
+                                  param["optimize_level"])
+                run_gaussian(psi4_out_dirs_name_freq + "_calculating")
+                os.rename(psi4_out_dirs_name_freq + "_calculating", psi4_out_dirs_name_freq)
+
+            UFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
+            psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
+            psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")+"UFF"
+            if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                if not os.path.isdir(UFF_out_dirs_name):
+                    print("UFF")
+                    CalcConfsEnergies(mol, "UFF")
                     highenergycut(mol, param["cut_MMFF_energy"])
                     rmsdcut(mol, param["cut_MMFF_rmsd"])
                     delconformer(mol, param["max_MMFF_conformer"])
                     ConfTransform(mol)
-                    conf_to_xyz(mol, MMFF_out_dirs_name)
+                    conf_to_xyz(mol, UFF_out_dirs_name)
+
                 if not os.path.isdir(psi4_out_dirs_name):
-                    psi4optimization(MMFF_out_dirs_name, psi4_out_dirs_name + "_calculating", param["optimize_level"])
+                    psi4optimization(UFF_out_dirs_name, psi4_out_dirs_name + "_calculating", param["optimize_level"])
                     read_xyz(mol, psi4_out_dirs_name + "_calculating")
                     if param["cut_psi4_energy"]:
                         highenergycut(mol, param["cut_psi4_energy"])
@@ -306,14 +331,9 @@ if __name__ == '__main__':
                     ConfTransform(mol)
                     conf_to_xyz(mol, psi4_out_dirs_name)
                     shutil.rmtree(psi4_out_dirs_name + "_calculating")
-                    # os.rename(psi4_out_dirs_name + "_calculating", psi4_out_dirs_name)
-                ##if True and not os.path.isdir(psi4_out_dirs_name_freq):
-                #     psi4frequency(psi4_out_dirs_name, psi4_out_dirs_name_freq + "_calculating", param["optimize_level"])
-                #     os.rename(psi4_out_dirs_name_freq + "_calculating", psi4_out_dirs_name_freq)
-                if True and not os.path.isdir(psi4_out_dirs_name_freq):
+
+                if not os.path.isdir(psi4_out_dirs_name_freq):
                     gaussianfrequency(psi4_out_dirs_name, psi4_out_dirs_name_freq + "_calculating",
                                       param["optimize_level"])
                     run_gaussian(psi4_out_dirs_name_freq + "_calculating")
                     os.rename(psi4_out_dirs_name_freq + "_calculating", psi4_out_dirs_name_freq)
-            else:
-                None

@@ -23,7 +23,7 @@ def psi4calculation(input_dir_name, output_dir_name, level="hf/sto-3g"):
     for filepath in sorted(glob.glob("{}/optimized?.xyz".format(input_dir_name))):
         i = filepath[-5]
         os.makedirs(output_dir_name, exist_ok=True)
-        with open("{}/optimized{}.xyz".format(input_dir_name, i), "r") as f:
+        with open(filepath, "r") as f:
             rl = f.read().split("\n")
             mol_input = "0 1\n nocom\n noreorient\n " + "\n".join(rl[2:])
             molecule = psi4.geometry(mol_input)
@@ -75,10 +75,7 @@ def psi4calculation(input_dir_name, output_dir_name, level="hf/sto-3g"):
 def cube_to_pkl(dirs_name):
     # i = 0
     # while os.path.isfile("{}/optimized{}.xyz".format(dirs_name + "calculating", i)):
-    print("!!")
-    print(sorted(glob.glob("{}/optimized?.xyz".format(dirs_name + "calculating"))))
     for filepath in sorted(glob.glob("{}/optimized?.xyz".format(dirs_name + "calculating"))):
-        print(filepath)
         i = filepath[-5]
         with open("{}/Dt{}.cube".format(dirs_name + "calculating", i), 'r', encoding='UTF-8') as f:
             Dt = f.read().splitlines()
@@ -117,7 +114,7 @@ def cube_to_pkl(dirs_name):
 
 
 if __name__ == '__main__':
-    datafilename = "../arranged_dataset_1020/*.xls"
+    datafilename = "../arranged_dataset/*.xls"
     l = glob.glob(datafilename)
     print(l)
     dfs = []
@@ -133,6 +130,7 @@ if __name__ == '__main__':
     print(len(df))
     print(len(df.duplicated(subset='InchyKey')))
     while True:
+        # time.sleep(3600 * 48)
         for param_file_name in glob.glob("../parameter/single_point_calculation_parameter/*.txt"):
             with open(param_file_name, "r") as f:
                 param = json.loads(f.read())
@@ -141,14 +139,20 @@ if __name__ == '__main__':
             others = []
             for i, smiles in enumerate(df["smiles"]):
                 mol = calculate_conformation.get_mol(smiles)
-                input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey")
-                output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-                print(i, output_dirs_name, smiles)
-                if not os.path.isdir(output_dirs_name):
-                    try:
+                if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                                                         "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                                                         "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+
+                    input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
+                    output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
+                    if not os.path.isdir(output_dirs_name):
                         psi4calculation(input_dirs_name, output_dirs_name + "calculating", param["one_point_level"])
                         cube_to_pkl(output_dirs_name)
-                    except Exception as e:
-                        print(e)
-                        continue
+                input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey")
+                output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
+                if not os.path.isdir(output_dirs_name):
+                    psi4calculation(input_dirs_name, output_dirs_name + "calculating", param["one_point_level"])
+                    cube_to_pkl(output_dirs_name)
+            print(i, output_dirs_name, smiles)
+
         time.sleep(10)

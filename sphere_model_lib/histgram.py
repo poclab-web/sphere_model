@@ -24,7 +24,7 @@ if __name__ == '__main__':
         df["molwt"] = df["smiles"].apply(lambda smiles: ExactMolWt(Chem.MolFromSmiles(smiles)))
         df = df.sort_values("molwt")  # [:2]
     else:
-        datafilename = "../arranged_dataset_1020/*.xls"
+        datafilename = "../arranged_dataset/*.xls"
         l = glob.glob(datafilename)
         dfs = []
         for name in l:
