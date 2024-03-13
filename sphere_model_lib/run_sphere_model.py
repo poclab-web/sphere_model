@@ -13,24 +13,24 @@ import cclib
 
 
 def pkl_to_featurevalue(dirs_name, dfp, mol, param):
-    dfp = dfp.sort_values(by="r", ascending=False)
+    # dfp = dfp.sort_values(by="r", ascending=False)
 
     for i, filename in enumerate(sorted(glob.glob("{}/data?.pkl".format(dirs_name)))):
 
         data = pd.read_pickle(filename)
-        data = data[(data["x"] > dfp["x"].min() - dfp["r"].max())]
-        data = data[(data["y"] > dfp["y"].min() - dfp["r"].max())]
-        data = data[(data["y"] < dfp["y"].max() + dfp["r"].max())]
+        data = data[(data["x"] > dfp["x"].min() - dfp["R"].max())]
+        data = data[(data["y"] > dfp["y"].min() - dfp["R"].max())]
+        data = data[(data["y"] < dfp["y"].max() + dfp["R"].max())]
         data = [data[data["z"] > 0], data[data["z"] < 0]]
         coordinate = [data[0][["x", "y", "z"]].to_numpy(), data[1][["x", "y", "z"]].to_numpy()]
         for cent in dfp[["x", "y", "z"]].drop_duplicates().values:
             dfp_ = dfp[(dfp["x"] == cent[0]) & (dfp["y"] == cent[1]) & (dfp["z"] == cent[2])]
             d = [np.linalg.norm(coordinate[0] - np.array(cent), axis=1),
                  np.linalg.norm(coordinate[1] - np.array(cent) * np.array([1, -1, -1]), axis=1)]
-            cond = list(map(lambda _: _ < dfp_["r"].max(), d))
+            cond = list(map(lambda _: _ < dfp_["R"].max(), d))
             d_ = [d[0][cond[0]], d[1][cond[1]]]
             data_ = [data[0][cond[0]], data[1][cond[1]]]
-            for p, r in zip(dfp_[["r", "d", "θ"]].values, dfp_["r"]):
+            for p, r in zip(dfp_[["R", "d", "θ"]].values, dfp_["R"]):
                 data__ = [data_[0][d_[0] < r], data_[1][d_[1] < r]]
                 features = {}
                 dr = (0.52917720859 * 0.2) ** 3
@@ -91,7 +91,7 @@ def energy_to_Boltzmann_distribution(mol, RT=1.99e-3 * 273):
 
 
 def feature_value(mol, dfp, param):
-    for p in dfp[["r", "d", "θ"]].values:
+    for p in dfp[["R", "d", "θ"]].values:
         weights = [float(conf.GetProp("Boltzmann_distribution")) for conf in mol.GetConformers()]
         lis = mol.GetConformers()
 
@@ -118,7 +118,7 @@ def grid_search(df, dfp, param, output_dir_name="../results/test", output_file_n
     coefs = []
     stds = []
     r2s = []
-    for p in dfp[["r", "d", "θ"]].values:
+    for p in dfp[["R", "d", "θ"]].values:
         l_normalized = []
         l = []
         for name in param:
@@ -382,7 +382,7 @@ if __name__ == '__main__':
 
             dfp_ = grid_search(df_, dfp, param["feature"], "{}/{}".format(param["save_dir"], name),
                                "/grid_search.csv")
-            model = leave_one_out(df_, dfp_[["r", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
+            model = leave_one_out(df_, dfp_[["R", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
                                   "{}/{}".format(param["save_dir"], name),
                                   "/leave_one_out.xls")
             if name in ["LiAlH4", "NaBH4", "MeLi", "PhLi"]:
@@ -391,7 +391,7 @@ if __name__ == '__main__':
                 for mol, RT in zip(df_test["mol"], df_test["RT"]):
                     energy_to_Boltzmann_distribution(mol, RT)
                     feature_value(mol, dfp, param["feature"])
-                prediction(model, df_test, dfp_[["r", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
+                prediction(model, df_test, dfp_[["R", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
                            "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
             # print(dfp_)
             # if False and name == "MeMgI":
@@ -401,7 +401,7 @@ if __name__ == '__main__':
             #             lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
             #
             #         p = dfp_.iloc[dfp_["RMSE"].idxmin():dfp_["RMSE"].idxmin() + 1]
-            #         p["r"] = p["r"] * n
+            #         p["R"] = p["R"] * n
             #         p = p.round(2)
             #         print(p)
             #         for mol, RT in zip(df_test["mol"], df_test["RT"]):
@@ -409,5 +409,5 @@ if __name__ == '__main__':
             #             pkl_to_featurevalue(dirs_name, p, mol, param["feature"])
             #             energy_to_Boltzmann_distribution(mol, RT)
             #             feature_value(mol, p, param["feature"])
-            #         prediction(model, df_test, p[["r", "d", "θ"]].values[0], param["feature"],
+            #         prediction(model, df_test, p[["R", "d", "θ"]].values[0], param["feature"],
             #                    "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")

@@ -32,7 +32,7 @@ if True:
             coef = dfp[["b_electron", "b_LUMO"]].values[dfp["RMSE"].idxmin()]
             coef = -coef[1] * 100 / np.sum(np.abs(coef))
             coefs.append(coef)
-            R = dfp[["r"]].values[dfp["RMSE"].idxmin()]
+            R = dfp[["R"]].values[dfp["RMSE"].idxmin()]
             Rs.append(R)
             print(coef, R, name)
         cmap = plt.cm.get_cmap("cool_r")
@@ -173,7 +173,7 @@ for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_mode
             # coef = dfp[["Dt_coef", "LUMO_coef"]].values[dfp["RMSE"].idxmin()]
             print(name, file=f)
             print(dfp.drop(['x', 'y', 'z'], axis='columns').iloc[dfp["RMSE"].idxmin()][
-                      ["r", "d", "±θ", "b_electron", "b_LUMO"]].round(2), file=f)
+                      ["R", "d", "±θ", "b_electron", "b_LUMO"]].round(2), file=f)
 
 # feature importance
 fig = plt.figure(figsize=(3, 3))
