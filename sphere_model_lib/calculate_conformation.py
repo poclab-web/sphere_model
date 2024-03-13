@@ -304,12 +304,12 @@ if __name__ == '__main__':
                 run_gaussian(psi4_out_dirs_name_freq + "_calculating")
                 os.rename(psi4_out_dirs_name_freq + "_calculating", psi4_out_dirs_name_freq)
 
-            UFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
-            psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
-            psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey")+"UFF"
+            UFF_out_dirs_name = param["MMFF_opt_save_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
+            psi4_out_dirs_name = param["psi4_opt_save_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
+            psi4_out_dirs_name_freq = param["psi4_opt_save_file"] + "_freq" + "/" + mol.GetProp("InchyKey") + "UFF"
             if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
-                "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
-                "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                                           "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                                           "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
                 if not os.path.isdir(UFF_out_dirs_name):
                     print("UFF")
                     CalcConfsEnergies(mol, "UFF")
