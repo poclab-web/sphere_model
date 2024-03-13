@@ -14,8 +14,7 @@ import cclib
 
 def pkl_to_featurevalue(dirs_name, dfp, mol, param):
     dfp = dfp.sort_values(by="r", ascending=False)
-    # i = 0
-    # while os.path.isfile("{}/data{}.pkl".format(dirs_name, i)):
+
     for i, filename in enumerate(sorted(glob.glob("{}/data?.pkl".format(dirs_name)))):
 
         data = pd.read_pickle(filename)
@@ -31,7 +30,7 @@ def pkl_to_featurevalue(dirs_name, dfp, mol, param):
             cond = list(map(lambda _: _ < dfp_["r"].max(), d))
             d_ = [d[0][cond[0]], d[1][cond[1]]]
             data_ = [data[0][cond[0]], data[1][cond[1]]]
-            for p, r in zip(dfp_[["r", "d", "t"]].values, dfp_["r"]):
+            for p, r in zip(dfp_[["r", "d", "θ"]].values, dfp_["r"]):
                 data__ = [data_[0][d_[0] < r], data_[1][d_[1] < r]]
                 features = {}
                 dr = (0.52917720859 * 0.2) ** 3
@@ -55,46 +54,44 @@ def pkl_to_featurevalue(dirs_name, dfp, mol, param):
                         features["LUMO"] = LUMOs
                     else:
                         features["LUMO"] = LUMO1s
-
-                if "DUAL" in param:
-                    DUAL_up = data__[0]["DUAL"].to_numpy()
-                    DUAL_down = data__[1]["DUAL"].to_numpy()
-                    DUALs = [np.sum(DUAL_up) * dr, np.sum(DUAL_down) * dr]
-                    features["DUAL"] = DUALs
-                if "ESP" in param:
-                    ESP_up = data__[0]["ESP"].to_numpy()
-                    ESP_down = data__[1]["ESP"].to_numpy()
-                    isoval = 0.01
-                    ESPs = [np.sum(np.where(np.abs(ESP_up) < isoval, ESP_up, isoval * np.sign(ESP_up))) * dr,
-                            np.sum(np.where(np.abs(ESP_down) < isoval, ESP_down, isoval * np.sign(ESP_down))) * dr]
-                    features["ESP"] = ESPs
+                # if "DUAL" in param:
+                #     DUAL_up = data__[0]["DUAL"].to_numpy()
+                #     DUAL_down = data__[1]["DUAL"].to_numpy()
+                #     DUALs = [np.sum(DUAL_up) * dr, np.sum(DUAL_down) * dr]
+                #     features["DUAL"] = DUALs
+                # if "ESP" in param:
+                #     ESP_up = data__[0]["ESP"].to_numpy()
+                #     ESP_down = data__[1]["ESP"].to_numpy()
+                #     isoval = 0.01
+                #     ESPs = [np.sum(np.where(np.abs(ESP_up) < isoval, ESP_up, isoval * np.sign(ESP_up))) * dr,
+                #             np.sum(np.where(np.abs(ESP_down) < isoval, ESP_down, isoval * np.sign(ESP_down))) * dr]
+                #     features["ESP"] = ESPs
                 mol.GetConformer(i).SetProp("features_list," + ",".join(map(str, p)), json.dumps(features))
-        # i += 1
 
 
 def energy_to_Boltzmann_distribution(mol, RT=1.99e-3 * 273):
-    if False:
-        energies = np.array([float(conf.GetProp("energy")) for conf in mol.GetConformers()])
-        energies = energies - np.min(energies)
-        rates = np.exp(-energies / RT)
-        rates = rates / np.sum(rates)
-        for conf, rate in zip(mol.GetConformers(), rates):
-            conf.SetProp("Boltzmann_distribution", str(rate))
-    else:
-        energies = []
-        for conf in mol.GetConformers():
-            line = json.loads(conf.GetProp("freq"))
-            energies.append(float(line[0] - line[1] * RT / 1.99e-3))
-        energies = np.array(energies)
-        energies = energies - np.min(energies)
-        rates = np.exp(-energies / RT)
-        rates = rates / np.sum(rates)
-        for conf, rate in zip(mol.GetConformers(), rates):
-            conf.SetProp("Boltzmann_distribution", str(rate))
+    # if False:
+    #     energies = np.array([float(conf.GetProp("energy")) for conf in mol.GetConformers()])
+    #     energies = energies - np.min(energies)
+    #     rates = np.exp(-energies / RT)
+    #     rates = rates / np.sum(rates)
+    #     for conf, rate in zip(mol.GetConformers(), rates):
+    #         conf.SetProp("Boltzmann_distribution", str(rate))
+    # else:
+    energies = []
+    for conf in mol.GetConformers():
+        line = json.loads(conf.GetProp("freq"))
+        energies.append(float(line[0] - line[1] * RT / 1.99e-3))
+    energies = np.array(energies)
+    energies = energies - np.min(energies)
+    rates = np.exp(-energies / RT)
+    rates = rates / np.sum(rates)
+    for conf, rate in zip(mol.GetConformers(), rates):
+        conf.SetProp("Boltzmann_distribution", str(rate))
 
 
 def feature_value(mol, dfp, param):
-    for p in dfp[["r", "d", "t"]].values:
+    for p in dfp[["r", "d", "θ"]].values:
         weights = [float(conf.GetProp("Boltzmann_distribution")) for conf in mol.GetConformers()]
         lis = mol.GetConformers()
 
@@ -121,7 +118,7 @@ def grid_search(df, dfp, param, output_dir_name="../results/test", output_file_n
     coefs = []
     stds = []
     r2s = []
-    for p in dfp[["r", "d", "t"]].values:
+    for p in dfp[["r", "d", "θ"]].values:
         l_normalized = []
         l = []
         for name in param:
@@ -279,97 +276,138 @@ def is_normal_frequencies(filename):
 
 
 if __name__ == '__main__':
-    if True:
-        time.sleep(3600 * 8)
-        # filename = "/Volumes/SSD-PMU3/b3lyp_6-31gd_freq"
-        for param_file_name in glob.glob("../parameter/run_sphere_model_parameter/20240306/*.txt"):
-            with open(param_file_name, "r") as f:
-                param = json.loads(f.read())
+    # time.sleep(3600 * 8)
+    # filename = "/Volumes/SSD-PMU3/b3lyp_6-31gd_freq"
+    for param_file_name in glob.glob("../parameter/run_sphere_model_parameter/20240306/*.txt"):
+        with open(param_file_name, "r") as f:
+            param = json.loads(f.read())
 
-            print(param)
-            l = glob.glob("../arranged_dataset/*.xls")
-            all_names = []
-            dfs = []
-            for name in l:
-                df = pd.read_excel(name).dropna(subset=['smiles'])  # [:3]
-                print(name, len(df))
-                df["mol"] = df["smiles"].apply(calculate_conformation.get_mol)
-                df["training"] = "training" in os.path.basename(name)[0]
-                all_names.append(os.path.splitext(os.path.basename(name))[0])
-                dfs.append(df)
-            df = pd.concat(dfs).drop_duplicates(subset=["smiles"])
-            freq = [all([is_normal_frequencies(path) for path in
-                         sorted(glob.glob(param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "/gaussianinput?.log"))])
-                    for
-                    mol in df["mol"]]
-            df = df[freq]
-            df = df[
-                [os.path.isdir(param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")) for mol in df["mol"]]]
-            print(all_names)
-            dfs = dict(zip(all_names, dfs))
-            print(len(df), df)
-            df["mol"].apply(
-                lambda mol: calculate_conformation.read_xyz(mol,
-                                                            param["one_point_out_file"] + "/" + mol.GetProp(
-                                                                "InchyKey")))
-            for mol in df["mol"]:
-                for path, conf in zip(
-                        sorted(glob.glob(param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "/gaussianinput?.log")),
-                        mol.GetConformers()):
-                    data = cclib.io.ccread(path)
-                    ent = data.enthalpy * 627.5095  # hartree
-                    entr = data.entropy * 627.5095  # hartree
-                    conf.SetProp("freq", json.dumps([ent, entr]))
-            dfp = pd.read_csv(param["sphere_parameter_path"])
-            print(len(dfp))
-            for mol, RT in zip(df["mol"], df["RT"]):
+        print(param)
+        all_names = []
+        dfs = []
+        for name in glob.glob("../arranged_dataset/*.xls"):
+            df = pd.read_excel(name).dropna(subset=['smiles'])  # [:3]
+            print(name, len(df))
+            df["mol"] = df["smiles"].apply(calculate_conformation.get_mol)
+            df["training"] = "training" in os.path.basename(name)[0]
+            all_names.append(os.path.splitext(os.path.basename(name))[0])
+            dfs.append(df)
+        df = pd.concat(dfs).drop_duplicates(subset=["smiles"])
+        # freq = [all([is_normal_frequencies(path) for path in
+        #              sorted(glob.glob(param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "/gaussianinput?.log"))])
+        #         for
+        #         mol in df["mol"]]
+        # df = df[freq]
+        # df = df[
+        #     [os.path.isdir(param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")) for mol in df["mol"]]]
+        l = []
+        for mol in df["mol"]:
+            if mol.GetProp("InchyKey") in [
+                # "MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                uff = "UFF"
+            else:
+                uff = ''
+            opt = os.path.isdir(param["one_point_out_file"] + "/" + mol.GetProp("InchyKey") + uff)
+            freq = all([is_normal_frequencies(path) for path in
+                        sorted(
+                            glob.glob(
+                                param["freq_dir"] + "/" + mol.GetProp("InchyKey") + uff + "/gaussianinput?.log"))])
+            ans = opt and freq
+            l.append(ans)
+        df = df[l]
+
+        print(all_names)
+        dfs = dict(zip(all_names, dfs))
+        print(len(df), df)
+        for mol in df["mol"]:
+            if mol.GetProp("InchyKey") in [
+                # "MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                # print(mol.GetProp("InchyKey"))
+                dirs_name = param["one_point_out_file"] + "/" + mol.GetProp(
+                    "InchyKey") + "UFF"
+                dirs_name_freq = param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "UFF" + "/gaussianinput?.log"
+            else:
+                dirs_name = param["one_point_out_file"] + "/" + mol.GetProp(
+                    "InchyKey")
+                dirs_name_freq = param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "/gaussianinput?.log"
+
+            calculate_conformation.read_xyz(mol,
+                                            dirs_name)
+            for path, conf in zip(
+                    sorted(glob.glob(dirs_name_freq)),
+                    mol.GetConformers()):
+                data = cclib.io.ccread(path)
+                ent = data.enthalpy * 627.5095  # hartree
+                entr = data.entropy * 627.5095  # hartree
+                conf.SetProp("freq", json.dumps([ent, entr]))
+        # df["mol"].apply(
+        #     lambda mol: calculate_conformation.read_xyz(mol,
+        #                                                 param["one_point_out_file"] + "/" + mol.GetProp(
+        #                                                     "InchyKey")))
+        # for mol in df["mol"]:
+        #
+        #     for path, conf in zip(
+        #             sorted(glob.glob(param["freq_dir"] + "/" + mol.GetProp("InchyKey") + "/gaussianinput?.log")),
+        #             mol.GetConformers()):
+        #         data = cclib.io.ccread(path)
+        #         ent = data.enthalpy * 627.5095  # hartree
+        #         entr = data.entropy * 627.5095  # hartree
+        #         conf.SetProp("freq", json.dumps([ent, entr]))
+        dfp = pd.read_csv(param["sphere_parameter_path"])
+        print(len(dfp))
+        for mol, RT in df[["mol", "RT"]].values:
+            energy_to_Boltzmann_distribution(mol, RT)
+        start = time.time()
+        for i, mol in enumerate(df["mol"]):
+            if mol.GetProp("InchyKey") in [
+                # "MILHJIWCSVKZDK-NAKRPEOUSA-N",
+                "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
+            else:
+                dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
+            print(i, dirs_name)
+            pkl_to_featurevalue(dirs_name, dfp, mol, param["feature"])
+
+        for name in ["BH3", "NaBH4", "LiAlH4", "LiAl(OMe)3H", "MeLi", "MeMgI", "PhLi", "PhMgI"]:
+            df_ = dfs["training_" + name]
+            df_["mol"] = df_["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
+            for mol, RT in zip(df_["mol"], df_["RT"]):
                 energy_to_Boltzmann_distribution(mol, RT)
-            start = time.time()
-            for i, mol in enumerate(df["mol"]):
-                if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
-                                               "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
-                                               "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
-                    dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
-                else:
-                    dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-                print(i, dirs_name)
-                pkl_to_featurevalue(dirs_name, dfp, mol, param["feature"])
+                feature_value(mol, dfp, param["feature"])
 
-            for name in ["BH3", "NaBH4", "LiAlH4", "LiAl(OMe)3H", "MeLi", "MeMgI", "PhLi", "PhMgI"]:
-                df_ = dfs["training_" + name]
-                df_["mol"] = df_["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-                for mol, RT in zip(df_["mol"], df_["RT"]):
+            dfp_ = grid_search(df_, dfp, param["feature"], "{}/{}".format(param["save_dir"], name),
+                               "/grid_search.csv")
+            model = leave_one_out(df_, dfp_[["r", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
+                                  "{}/{}".format(param["save_dir"], name),
+                                  "/leave_one_out.xls")
+            if name in ["LiAlH4", "NaBH4", "MeLi", "PhLi"]:
+                df_test = dfs["test_" + name]
+                df_test["mol"] = df_test["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
+                for mol, RT in zip(df_test["mol"], df_test["RT"]):
                     energy_to_Boltzmann_distribution(mol, RT)
                     feature_value(mol, dfp, param["feature"])
-
-                dfp_ = grid_search(df_, dfp, param["feature"], "{}/{}".format(param["save_dir"], name),
-                                   "/grid_search.csv")
-                model = leave_one_out(df_, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
-                                      "{}/{}".format(param["save_dir"], name),
-                                      "/leave_one_out.xls")
-                if name in ["LiAlH4", "NaBH4", "MeLi", "PhLi"]:
-                    df_test = dfs["test_" + name]
-                    df_test["mol"] = df_test["smiles"].apply(lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-                    for mol, RT in zip(df_test["mol"], df_test["RT"]):
-                        energy_to_Boltzmann_distribution(mol, RT)
-                        feature_value(mol, dfp, param["feature"])
-                    prediction(model, df_test, dfp_[["r", "d", "t"]].values[dfp_["RMSE"].idxmin()], param["feature"],
-                               "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
-                # print(dfp_)
-                # if False and name == "MeMgI":
-                #     for name, n in zip(["EtMgI", "iPrMgI", "tBuMgI"], [1.1, 1.2, 1.3]):
-                #         df_test = dfs["test_" + name]
-                #         df_test["mol"] = df_test["smiles"].apply(
-                #             lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
-                #
-                #         p = dfp_.iloc[dfp_["RMSE"].idxmin():dfp_["RMSE"].idxmin() + 1]
-                #         p["r"] = p["r"] * n
-                #         p = p.round(2)
-                #         print(p)
-                #         for mol, RT in zip(df_test["mol"], df_test["RT"]):
-                #             dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
-                #             pkl_to_featurevalue(dirs_name, p, mol, param["feature"])
-                #             energy_to_Boltzmann_distribution(mol, RT)
-                #             feature_value(mol, p, param["feature"])
-                #         prediction(model, df_test, p[["r", "d", "t"]].values[0], param["feature"],
-                #                    "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
+                prediction(model, df_test, dfp_[["r", "d", "θ"]].values[dfp_["RMSE"].idxmin()], param["feature"],
+                           "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")
+            # print(dfp_)
+            # if False and name == "MeMgI":
+            #     for name, n in zip(["EtMgI", "iPrMgI", "tBuMgI"], [1.1, 1.2, 1.3]):
+            #         df_test = dfs["test_" + name]
+            #         df_test["mol"] = df_test["smiles"].apply(
+            #             lambda smiles: df[df["smiles"] == smiles]["mol"].iloc[0])
+            #
+            #         p = dfp_.iloc[dfp_["RMSE"].idxmin():dfp_["RMSE"].idxmin() + 1]
+            #         p["r"] = p["r"] * n
+            #         p = p.round(2)
+            #         print(p)
+            #         for mol, RT in zip(df_test["mol"], df_test["RT"]):
+            #             dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")
+            #             pkl_to_featurevalue(dirs_name, p, mol, param["feature"])
+            #             energy_to_Boltzmann_distribution(mol, RT)
+            #             feature_value(mol, p, param["feature"])
+            #         prediction(model, df_test, p[["r", "d", "θ"]].values[0], param["feature"],
+            #                    "{}/{}".format(param["save_dir"], name), "/test_prediction.xls")

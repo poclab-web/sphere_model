@@ -173,7 +173,7 @@ for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_mode
             # coef = dfp[["Dt_coef", "LUMO_coef"]].values[dfp["RMSE"].idxmin()]
             print(name, file=f)
             print(dfp.drop(['x', 'y', 'z'], axis='columns').iloc[dfp["RMSE"].idxmin()][
-                      ["r", "d", "t", "b_electron", "b_LUMO"]].round(2), file=f)
+                      ["r", "d", "±θ", "b_electron", "b_LUMO"]].round(2), file=f)
 
 # feature importance
 fig = plt.figure(figsize=(3, 3))
@@ -277,7 +277,7 @@ ax.legend(["${b_\mathrm{LUMO}}$    " + levels[0], "${b_\mathrm{electron}}$ " + l
            "${b_\mathrm{LUMO}}$    " + levels[1], "${b_\mathrm{electron}}$ " + levels[1],
            "${b_\mathrm{LUMO}}$    " + levels[2], "${b_\mathrm{electron}}$ " + levels[2]],
           loc='upper left', bbox_to_anchor=(-0.05, 1.2), ncol=3, fontsize=8)
-#ax.plot([1 - (1 - margin) / 3 - margin, 8 + (1 - margin) / 3 + margin], [0.5, 0.5], color="Gray", alpha=0.5)
+# ax.plot([1 - (1 - margin) / 3 - margin, 8 + (1 - margin) / 3 + margin], [0.5, 0.5], color="Gray", alpha=0.5)
 fig.tight_layout()  # レイアウトの設定
 
 plt.savefig("../figs/all/coef_bars.png", dpi=500)
@@ -288,7 +288,7 @@ alpha = 0.4
 if True:
     fig = plt.figure(figsize=(9, 3))
     for j, (param_file_name, color) in enumerate(
-            zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+            zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/20240306/*.txt")),
                 ["red", "blue", "green"])):
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
