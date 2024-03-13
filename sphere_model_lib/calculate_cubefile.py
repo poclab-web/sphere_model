@@ -140,11 +140,11 @@ if __name__ == '__main__':
             for i, smiles in enumerate(df["smiles"]):
                 mol = calculate_conformation.get_mol(smiles)
                 if mol.GetProp("InchyKey") in ["MILHJIWCSVKZDK-NAKRPEOUSA-N",
-                                                         "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
-                                                         "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
+                                               "ASNHUYVMPRNXNB-NAKRPEOUSA-N",
+                                               "ZALGHXJCZDONDI-XNRSKRNUSA-N"]:
 
-                    input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
-                    output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey")+"UFF"
+                    input_dirs_name = param["psi4_aligned_save_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
+                    output_dirs_name = param["one_point_out_file"] + "/" + mol.GetProp("InchyKey") + "UFF"
                     if not os.path.isdir(output_dirs_name):
                         psi4calculation(input_dirs_name, output_dirs_name + "calculating", param["one_point_level"])
                         cube_to_pkl(output_dirs_name)
