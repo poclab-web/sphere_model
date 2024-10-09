@@ -6,5 +6,5 @@
 "save_dir": "../results/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)",
 "fig_dir":"../figs/M06-2X_6-311g(d,p)_b3lyp_6-31g(d)",
 "single point calculation":"M06-2X/6-311G(d,p)",
-"freq_dir":"/Volumes/SSD-PMU3/b3lyp_6-31gd_freq"
+"freq_dir":"/Volumes/HD-PGF-A/SSD-PMU3_copy/b3lyp_6-31gd_freq"
 }

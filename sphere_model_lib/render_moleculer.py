@@ -2,8 +2,9 @@ import itertools
 import numpy as np
 
 def addmesh(xyzview):
-    radius=0.005
-    rang=[[-5,2],[-5,5],[-4,4]]
+    radius=0.003
+    step=0.5
+    rang=[[-6,3],[-3,3],[-6,6]]
     def addcylinder_func(rang,xyzview,radius):
         xyzview.addCylinder({"start": {"x": rang[0][0], "y": rang[1][0], "z": rang[2][0]},
                              "end": {"x": rang[0][1], "y": rang[1][1], "z": rang[2][1]},
@@ -29,20 +30,23 @@ def addmesh(xyzview):
             xyzview = addcylinder_func([[x,x], rang[1], [z, z]], xyzview, radius*5)
 
     if True: #面のグリッド表示
-        l=list(itertools.product(rang[0],range(rang[1][0],rang[1][1]+1)))+\
-          list(itertools.product(range(rang[0][0],rang[0][1]+1),rang[1]))
+        l=list(itertools.product(rang[0],np.arange(rang[1][0],rang[1][1]+step,step)))+\
+          list(itertools.product(np.arange(rang[0][0],rang[0][1]+step,step),rang[1]))
         for x, y in l:
-            xyzview = addcylinder_func([[x, x], [y, y], rang[2]], xyzview, radius * 2)
+            if x==rang[0][1] or y==rang[1][1]:
+                xyzview = addcylinder_func([[x, x], [y, y], rang[2]], xyzview, radius * 2)
 
-        l=list(itertools.product(rang[1],range(rang[2][0],rang[2][1]+1)))+\
-          list(itertools.product(range(rang[1][0],rang[1][1]+1),rang[2]))
+        l=list(itertools.product(rang[1],np.arange(rang[2][0],rang[2][1]+step,step)))+\
+          list(itertools.product(np.arange(rang[1][0],rang[1][1]+step,step),rang[2]))
         for y,z in l:
-            xyzview = addcylinder_func([rang[0], [y, y], [z,z]], xyzview, radius*2)
+            if y == rang[1][1] or z == rang[2][1]:
+                xyzview = addcylinder_func([rang[0], [y, y], [z,z]], xyzview, radius*2)
 
-        l=list(itertools.product(rang[2],range(rang[0][0],rang[0][1]+1)))+\
-          list(itertools.product(range(rang[2][0],rang[2][1]+1),rang[0]))
+        l=list(itertools.product(rang[2],np.arange(rang[0][0],rang[0][1]+step,step)))+\
+          list(itertools.product(np.arange(rang[2][0],rang[2][1]+step,step),rang[0]))
         for z,x in l:
-            xyzview = addcylinder_func([[x,x], rang[1], [z, z]], xyzview, radius*2)
+            if z == rang[2][1] or x == rang[0][1]:
+                xyzview = addcylinder_func([[x,x], rang[1], [z, z]], xyzview, radius*2)
 
 
 

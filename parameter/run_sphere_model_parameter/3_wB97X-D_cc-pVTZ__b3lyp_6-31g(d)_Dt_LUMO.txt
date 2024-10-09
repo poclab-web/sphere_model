@@ -6,5 +6,5 @@
 "save_dir": "../results/wB97X-D_cc-PVTZ_b3lyp_6-31g(d)",
 "fig_dir":"../figs/wB97X-D_cc-PVTZ_b3lyp_6-31g(d)",
 "single point calculation":"ωB97X-D/cc-pVTZ",
-"freq_dir":"/Volumes/SSD-PMU3/b3lyp_6-31gd_freq"
+"freq_dir":"/Volumes/HD-PGF-A/SSD-PMU3_copy/b3lyp_6-31gd_freq"
 }

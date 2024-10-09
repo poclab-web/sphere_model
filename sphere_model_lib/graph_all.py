@@ -16,7 +16,7 @@ os.makedirs("../figs/all", exist_ok=True)
 if True:
     fig = plt.figure(figsize=(11, 3))
     j = 0
-    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                       ["red", "blue", "green"]):
         j += 1
         ax = fig.add_subplot(1, 3, j)
@@ -60,7 +60,7 @@ if True:
                                          "{PhLi}",
                                          "{PhMgI}"])):
         ax = fig.add_subplot(2, 4, i + 1)
-        for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+        for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                           [["red", "red"], ["blue", "blue"], ["green", "green"]]):
 
             with open(param_file_name, "r") as f:
@@ -109,7 +109,7 @@ fig = plt.figure(figsize=(14, 3))
 for i, (name, label) in enumerate(
         zip(["LiAlH4", "NaBH4", "MeLi", "PhLi"], ["{LiAlH_4}", "{NaBH_4}", "{MeLi}", "{PhLi}"])):
     ax = fig.add_subplot(1, 4, i + 1)
-    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+    for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                       [["red", "red"], ["blue", "blue"], ["green", "green"]]):
         with open(param_file_name, "r") as f:
             param = json.loads(f.read())
@@ -162,7 +162,7 @@ for i, (name, label) in enumerate(
 # ax.legend([None,"$\mathrm{b_{LUMO}}$","$\mathrm{b_{electron}}$"], loc='upper left', bbox_to_anchor=(0.5, 1.1),  ncol=2)
 fig.tight_layout()
 plt.savefig("../figs/all/prediction_test.png", dpi=500)
-for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                   ["red", "blue", "green"]):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
@@ -173,12 +173,12 @@ for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_mode
             # coef = dfp[["Dt_coef", "LUMO_coef"]].values[dfp["RMSE"].idxmin()]
             print(name, file=f)
             print(dfp.drop(['x', 'y', 'z'], axis='columns').iloc[dfp["RMSE"].idxmin()][
-                      ["R", "d", "±θ", "b_electron", "b_LUMO"]].round(2), file=f)
+                      ["R", "d", "θ", "b_electron", "b_LUMO"]].round(2), file=f)
 
 # feature importance
 fig = plt.figure(figsize=(3, 3))
 ax = fig.add_subplot(1, 1, 1)
-for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                   ["red", "blue", "green"]):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
@@ -198,7 +198,7 @@ ax.set_ylabel("${b_\mathrm{LUMO}}$ [kcal/mol]")
 fig.tight_layout()  # レイアウトの設定
 plt.savefig("../figs/all/coef.png", dpi=500)
 
-for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+for param_file_name, color in zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
                                   ["red", "blue", "green"]):
 
     fig, ax = plt.subplots()
@@ -241,7 +241,7 @@ x = np.array([1, 2, 3, 4, 5, 6, 7, 8])
 fig, ax = plt.subplots(figsize=(6.4, 4))
 levels = []
 for i, (param_file_name, color) in enumerate(
-        zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*.txt")),
+        zip(sorted(glob.glob("../parameter/run_sphere_model_parameter/*/*.txt")),
             ["red", "blue", "green"])):
     with open(param_file_name, "r") as f:
         param = json.loads(f.read())
